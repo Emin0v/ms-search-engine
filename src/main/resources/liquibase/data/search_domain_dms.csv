@@ -1,0 +1,2 @@
+id;code;clickhouse_table;default_sort_field;default_sort_direction;active
+10000;documents;test.domainname_360_draft;createdAt;DESC;true

@@ -1,0 +1,52 @@
+id;domain_id;request_field;source_column;label;type;filterable;sortable;exportable;projection_default;array_field;allowed_operators;sort_order;active
+100000;10000;id;document_id;ID;NUMBER;true;true;false;true;false;EQUALS,IN;10;true
+100001;10000;documentNumber;document_number;Document number;TEXT;true;true;true;true;false;EQUALS,CONTAINS,IN;20;true
+100002;10000;subject;subject;Subject;TEXT;true;false;true;true;false;EQUALS,CONTAINS;30;true
+100003;10000;documentCategory;document_category;Document category;SELECT;true;true;true;true;false;EQUALS,NOT_EQUALS,IN;40;true
+100004;10000;documentStatus;document_status;Document status;SELECT;true;true;true;true;false;EQUALS,NOT_EQUALS,IN;50;true
+100005;10000;priority;priority;Priority;SELECT;true;true;true;true;false;EQUALS,NOT_EQUALS,IN;60;true
+100006;10000;format;format;Format;SELECT;true;true;true;true;false;EQUALS,NOT_EQUALS,IN;70;true
+100007;10000;tags;tags;Tags;TEXT;true;false;true;false;true;CONTAINS;80;true
+100008;10000;createdAt;created_at;Created at;DATE_TIME;true;true;true;true;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;90;true
+100009;10000;createdByEmployeeId;created_by_employee_id;Created by employee ID;NUMBER;true;false;false;false;false;EQUALS,IN;100;true
+100010;10000;createdByEmployeeName;created_by_employee_name;Created by;TEXT;true;true;true;true;false;EQUALS,CONTAINS;110;true
+100011;10000;documentSubtypeId;document_subtype_id;Document subtype ID;NUMBER;true;false;false;false;false;EQUALS,IN;120;true
+100012;10000;documentSubtypeName;document_subtype_name;Document subtype;TEXT;true;true;true;true;false;EQUALS,CONTAINS;130;true
+100013;10000;draftCandidate;is_draft_candidate;Draft candidate;BOOLEAN;true;false;false;false;false;EQUALS;140;true
+100014;10000;sentCandidate;is_sent_candidate;Sent candidate;BOOLEAN;true;false;false;false;false;EQUALS;150;true
+100015;10000;approvedCandidate;is_approved_candidate;Approved candidate;BOOLEAN;true;false;false;false;false;EQUALS;160;true
+100016;10000;inboxCandidate;is_inbox_candidate;Inbox candidate;BOOLEAN;true;false;false;false;false;EQUALS;170;true
+100017;10000;incomingEntryDate;incoming_entry_date;Incoming entry date;DATE_TIME;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;180;true
+100018;10000;incomingSentFromCompany;incoming_sent_from_company;Sender company;TEXT;true;true;true;false;false;EQUALS,CONTAINS;190;true
+100019;10000;incomingSentFromCompanyAddress;incoming_sent_from_company_address;Sender company address;TEXT;true;false;true;false;false;EQUALS,CONTAINS;200;true
+100020;10000;incomingSentFromPerson;incoming_sent_from_person;Sender person;TEXT;true;true;true;false;false;EQUALS,CONTAINS;210;true
+100021;10000;incomingSentFromPersonPosition;incoming_sent_from_person_position;Sender position;TEXT;true;false;true;false;false;EQUALS,CONTAINS;220;true
+100022;10000;incomingAddressedToEmployeeId;incoming_addressed_to_employee_id;Addressed employee ID;NUMBER;true;false;false;false;false;EQUALS,IN;230;true
+100023;10000;incomingAddressedToEmployeeName;incoming_addressed_to_employee_name;Addressed employee;TEXT;true;true;true;false;false;EQUALS,CONTAINS;240;true
+100024;10000;incomingReplyRequired;incoming_is_reply_letter_required;Reply required;BOOLEAN;true;false;true;false;false;EQUALS;250;true
+100025;10000;outgoingSendingToCompany;outgoing_sending_to_company;Recipient company;TEXT;true;true;true;false;false;EQUALS,CONTAINS;260;true
+100026;10000;outgoingSendingToCompanyAddress;outgoing_sending_to_company_address;Recipient company address;TEXT;true;false;true;false;false;EQUALS,CONTAINS;270;true
+100027;10000;outgoingSendingToPerson;outgoing_sending_to_person;Recipient person;TEXT;true;true;true;false;false;EQUALS,CONTAINS;280;true
+100028;10000;outgoingSendingToPersonPosition;outgoing_sending_to_person_position;Recipient position;TEXT;true;false;true;false;false;EQUALS,CONTAINS;290;true
+100029;10000;outgoingOnBehalfOfEmployeeId;outgoing_on_behalf_of_employee_id;Outgoing on behalf of employee ID;NUMBER;true;false;false;false;false;EQUALS,IN;300;true
+100030;10000;outgoingOnBehalfOfEmployeeName;outgoing_on_behalf_of_employee_name;Outgoing on behalf of employee;TEXT;true;true;true;false;false;EQUALS,CONTAINS;310;true
+100031;10000;internalOnBehalfOfEmployeeId;internal_on_behalf_of_employee_id;Internal on behalf of employee ID;NUMBER;true;false;false;false;false;EQUALS,IN;320;true
+100032;10000;internalOnBehalfOfEmployeeName;internal_on_behalf_of_employee_name;Internal on behalf of employee;TEXT;true;true;true;false;false;EQUALS,CONTAINS;330;true
+100033;10000;contractSum;contract_sum;Contract sum;NUMBER;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;340;true
+100034;10000;contractValidFrom;contract_valid_from;Contract valid from;DATE;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;350;true
+100035;10000;contractValidTill;contract_valid_till;Contract valid till;DATE;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;360;true
+100036;10000;protocolResolution;protocol_resolution;Protocol resolution;TEXT;true;false;true;false;false;EQUALS,CONTAINS;370;true
+100037;10000;protocolReasonForCompilation;protocol_reason_for_compilation;Protocol compilation reason;TEXT;true;false;true;false;false;EQUALS,CONTAINS;380;true
+100038;10000;workflowExecutionId;workflow_execution_id;Workflow execution ID;NUMBER;false;false;false;false;false;EQUALS;390;true
+100039;10000;documentBusinessProcessId;document_business_process_id;Document business process ID;NUMBER;false;false;false;false;false;EQUALS;400;true
+100040;10000;businessProcessTemplateId;dms_business_process_temp_id;Business process template ID;NUMBER;true;false;false;false;false;EQUALS,IN;410;true
+100041;10000;reviewerId;reviewer_id;Reviewer ID;NUMBER;true;false;false;false;false;EQUALS,IN;420;true
+100042;10000;reviewerName;reviewer_name;Reviewer;TEXT;true;true;true;false;false;EQUALS,CONTAINS;430;true
+100043;10000;reviewerAction;reviewer_action;Reviewer action;SELECT;true;true;true;false;false;EQUALS,NOT_EQUALS,IN;440;true
+100044;10000;businessProcessStatus;business_process_status;Business process status;SELECT;true;true;true;false;false;EQUALS,NOT_EQUALS,IN;450;true
+100045;10000;workflowStepId;workflow_step_id;Workflow step ID;NUMBER;false;false;false;false;false;EQUALS;460;true
+100046;10000;stepExecutorEmployeeId;step_exec_by_employee_id;Step executor employee ID;NUMBER;true;false;false;false;false;EQUALS,IN;470;true
+100047;10000;stepExecutorEmployeeName;step_exec_by_employee_name;Step executor;TEXT;true;true;true;false;false;EQUALS,CONTAINS;480;true
+100048;10000;stepAssignmentStatus;step_assignment_status;Step assignment status;SELECT;true;true;true;false;false;EQUALS,NOT_EQUALS,IN;490;true
+100049;10000;workflowClaimedAt;workflow_claimed_at;Workflow claimed at;DATE_TIME;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;500;true
+100050;10000;workflowActionTime;workflow_action_time;Workflow action time;DATE_TIME;true;true;true;false;false;EQUALS,BETWEEN,GREATER_THAN,LESS_THAN;510;true

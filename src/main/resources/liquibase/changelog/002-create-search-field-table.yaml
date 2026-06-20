@@ -1,0 +1,238 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-search-field-table
+      author: Mahammad Eminov
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: search_field
+      changes:
+        - createTable:
+            tableName: search_field
+            remarks: >
+              Stores searchable field metadata for each search domain.
+              Each row maps a frontend request field to a real ClickHouse source column.
+              This table is the whitelist for filtering, sorting, projection and export.
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  remarks: Primary key. Inherited from BaseEntity.
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_search_field
+                    nullable: false
+
+              - column:
+                  name: domain_id
+                  type: BIGINT
+                  remarks: Reference to search_domain.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: request_field
+                  type: VARCHAR(255)
+                  remarks: >
+                    Field name used by frontend request.
+                    This value is never directly trusted from request.
+                    It is used only as a key to find metadata.
+                    Example: documentNumber.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: source_column
+                  type: VARCHAR(255)
+                  remarks: >
+                    Real ClickHouse column name.
+                    Backend uses this value in generated SQL only after validation and identifier quoting.
+                    Example: contract_number.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: label
+                  type: VARCHAR(255)
+                  remarks: Human-readable label shown on frontend.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  remarks: >
+                    Logical field type used by validation and query builder.
+                    Allowed values: TEXT, NUMBER, DATE, DATE_TIME, SELECT, BOOLEAN.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: filterable
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  remarks: Shows whether this field can be used in filters.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: sortable
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  remarks: Shows whether this field can be used in ORDER BY.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: exportable
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  remarks: Shows whether this field can be used in export output.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: projection_default
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  remarks: >
+                    Shows whether this field is returned by default when frontend does not send columns.
+                    This helps backend avoid SELECT *.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: array_field
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  remarks: >
+                    Shows whether source_column is a ClickHouse array column.
+                    Array fields are queried with ClickHouse array functions like has().
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: allowed_operators
+                  type: VARCHAR(500)
+                  remarks: >
+                    Comma-separated allowed operators for this field.
+                    Example: EQUALS,CONTAINS,BETWEEN.
+                    For non-filterable fields, this can be empty if entity is adjusted to allow it.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: sort_order
+                  type: INTEGER
+                  remarks: Field display order in metadata response.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  remarks: Shows whether this search field is active.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_by
+                  type: UUID
+                  remarks: User id who created the row. Inherited from BaseEntity.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: updated_by
+                  type: UUID
+                  remarks: User id who last updated the row. Inherited from BaseEntity.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: Row creation timestamp. Inherited from BaseEntity.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: Last row update timestamp. Inherited from BaseEntity.
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: search_field
+            baseColumnNames: domain_id
+            referencedTableName: search_domain
+            referencedColumnNames: id
+            constraintName: fk_search_field_domain
+            onDelete: CASCADE
+
+        - addUniqueConstraint:
+            tableName: search_field
+            columnNames: domain_id, request_field
+            constraintName: uk_search_field_domain_request_field
+
+        - createIndex:
+            tableName: search_field
+            indexName: idx_search_field_domain_active_sort
+            remarks: Speeds up active field metadata lookup by domain and sort order.
+            columns:
+              - column:
+                  name: domain_id
+              - column:
+                  name: active
+              - column:
+                  name: sort_order
+              - column:
+                  name: id
+
+        - sql:
+            comment: Validate search field type enum values.
+            sql: >
+              ALTER TABLE search_field
+              ADD CONSTRAINT chk_search_field_type
+              CHECK (
+                type IN ('TEXT', 'NUMBER', 'DATE', 'DATE_TIME', 'SELECT', 'BOOLEAN')
+              );
+
+        - sql:
+            comment: Validate frontend request field identifier.
+            sql: >
+              ALTER TABLE search_field
+              ADD CONSTRAINT chk_search_field_request_field_identifier
+              CHECK (
+                request_field ~ '^[A-Za-z_][A-Za-z0-9_]*$'
+              );
+
+        - sql:
+            comment: Validate ClickHouse source column identifier.
+            sql: >
+              ALTER TABLE search_field
+              ADD CONSTRAINT chk_search_field_source_column_identifier
+              CHECK (
+                source_column ~ '^[A-Za-z_][A-Za-z0-9_]*$'
+              );
+
+        - sql:
+            comment: Validate filterable fields have allowed operators.
+            sql: >
+              ALTER TABLE search_field
+              ADD CONSTRAINT chk_search_field_filterable_allowed_operators
+              CHECK (
+                filterable = false
+                OR length(trim(allowed_operators)) > 0
+              );
+
+      rollback:
+        - dropTable:
+            tableName: search_field
+            cascadeConstraints: true

@@ -1,0 +1,173 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-search-domain-table
+      author: Mahammad Eminov
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: search_domain
+      changes:
+        - createTable:
+            tableName: search_domain
+            remarks: >
+              Stores search domain metadata for ms-search-engine.
+              Each row maps one frontend domain code to one ClickHouse Silver table.
+              This table stores only metadata/configuration, not business data.
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  remarks: Primary key. Inherited from BaseEntity.
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_search_domain
+                    nullable: false
+
+              - column:
+                  name: code
+                  type: VARCHAR(255)
+                  remarks: >
+                    Unique search domain code used in API path.
+                    Example: contracts, business-partners, invoices.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: clickhouse_table
+                  type: VARCHAR(255)
+                  remarks: >
+                    ClickHouse Silver table name for this domain.
+                    Example: silver_contract_360_flat or analytics.silver_contract_360_flat.
+                    This value must be validated before it is used in SQL.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: tenant_column
+                  type: VARCHAR(255)
+                  remarks: >
+                    Optional ClickHouse column used for organization/tenant filtering.
+                    If this value exists, backend adds:
+                    AND {tenant_column} = :tenantValue.
+                    Example: organization_id.
+                    If this value is null, backend does not add tenant filter.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: default_sort_field
+                  type: VARCHAR(255)
+                  remarks: >
+                    Default frontend request field used for sorting when request does not send sortBy.
+                    This is not a ClickHouse column name.
+                    Example: createdAt.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: default_sort_direction
+                  type: VARCHAR(255)
+                  remarks: >
+                    Default sort direction.
+                    Allowed values: ASC, DESC.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  remarks: Shows whether this search domain is active.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_by
+                  type: UUID
+                  remarks: User id who created the row. Inherited from BaseEntity.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: updated_by
+                  type: UUID
+                  remarks: User id who last updated the row. Inherited from BaseEntity.
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: Row creation timestamp. Inherited from BaseEntity.
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  remarks: Last row update timestamp. Inherited from BaseEntity.
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: search_domain
+            columnNames: code
+            constraintName: uk_search_domain_code
+
+        - createIndex:
+            tableName: search_domain
+            indexName: idx_search_domain_code_active
+            remarks: Speeds up active domain lookup by code.
+            columns:
+              - column:
+                  name: code
+              - column:
+                  name: active
+
+        - sql:
+            comment: Validate default_sort_direction enum values.
+            sql: >
+              ALTER TABLE search_domain
+              ADD CONSTRAINT chk_search_domain_default_sort_direction
+              CHECK (
+                default_sort_direction IS NULL
+                OR default_sort_direction IN ('ASC', 'DESC')
+              );
+
+        - sql:
+            comment: Validate ClickHouse table identifier. Allows table or database.table format.
+            sql: >
+              ALTER TABLE search_domain
+              ADD CONSTRAINT chk_search_domain_clickhouse_table_identifier
+              CHECK (
+                clickhouse_table ~ '^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$'
+              );
+
+        - sql:
+            comment: Validate optional tenant column identifier.
+            sql: >
+              ALTER TABLE search_domain
+              ADD CONSTRAINT chk_search_domain_tenant_column_identifier
+              CHECK (
+                tenant_column IS NULL
+                OR tenant_column ~ '^[A-Za-z_][A-Za-z0-9_]*$'
+              );
+
+        - sql:
+            comment: Validate optional default sort field identifier.
+            sql: >
+              ALTER TABLE search_domain
+              ADD CONSTRAINT chk_search_domain_default_sort_field_identifier
+              CHECK (
+                default_sort_field IS NULL
+                OR default_sort_field ~ '^[A-Za-z_][A-Za-z0-9_]*$'
+              );
+
+      rollback:
+        - dropTable:
+            tableName: search_domain
+            cascadeConstraints: true

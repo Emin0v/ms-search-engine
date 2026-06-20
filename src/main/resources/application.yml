@@ -1,0 +1,122 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: ms-search-engine
+  jackson:
+    mapper:
+      accept-case-insensitive-enums: true
+
+  threads:
+    virtual:
+      enabled: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  config:
+    import:
+      - optional:vault://secret/agrone/core/${spring.application.name}/${ENV}
+
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/changelog-master.yaml
+    url: ${CORE_POSTGRES_URL}/search_engine
+    user: ${CORE_POSTGRES_USER}
+    password: ${CORE_POSTGRES_PASSWORD}
+
+  cloud:
+    vault:
+      uri: ${VAULT_URI}
+      authentication: approle
+      app-role:
+        role-id: ${VAULT_ROLE_ID}
+        secret-id: ${VAULT_SECRET_ID}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: ${ENV}/${spring.application.name}
+      enabled: false
+
+    openfeign:
+      client:
+        config:
+          default:
+            logger-level: BASIC
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: ${CORE_POSTGRES_URL}/search_engine?ApplicationName=${HOSTNAME}
+    username: ${CORE_POSTGRES_USER}
+    password: ${CORE_POSTGRES_PASS}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: ${HOSTNAME}-pool
+      maximum-pool-size: ${HIKARICP_MAX_POOL_SIZE:10}
+      minimum-idle: ${HIKARICP_MIN_IDLE:2}
+      connection-timeout: ${HIKARICP_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${HIKARICP_IDLE_TIMEOUT:600000}
+      max-lifetime: ${HIKARICP_MAX_LIFETIME:1800000}
+      keepalive-time: ${HIKARICP_KEEPALIVE_TIME:120000}
+      leak-detection-threshold: ${HIKARICP_LEAK_DETECTION_THRESHOLD:60000}
+
+  jpa:
+    open-in-view: false
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    properties:
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.default_schema: public
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    ROOT: info
+    com.company.searchengine: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    enabled: true
+    propagation:
+      type: b3_multi
+    sampling:
+      probability: 1.0
+
+application:
+  swagger:
+    custom-headers: ac-organization-id, ac-user-id, ac-user-type, ac-email, ac-bp-id, ac-employee-id
+  interceptor:
+    request:
+      exclude-path-patterns: "/swagger**/**,/api-docs,/error"
+
+
+clickhouse:
+  url: ${CLICKHOUSE_URL}
+  username: ${CLICKHOUSE_USERNAME}
+  password: ${CLICKHOUSE_PASSWORD}
+  maximum-pool-size: ${CLICKHOUSE_MAXIMUM_POOL_SIZE:10}
+  minimum-idle: ${CLICKHOUSE_MINIMUM_IDLE:2}
+  connection-timeout-ms: ${CLICKHOUSE_CONNECTION_TIMEOUT_MS:30000}
+  idle-timeout-ms: ${CLICKHOUSE_IDLE_TIMEOUT_MS:600000}
+  max-lifetime-ms: ${CLICKHOUSE_MAX_LIFETIME_MS:1800000}

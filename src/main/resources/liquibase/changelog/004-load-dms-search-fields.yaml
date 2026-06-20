@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-load-dms-search-fields
+      author: Mahammad Eminov
+      preConditions:
+        - onFail: HALT
+        - tableExists:
+            tableName: search_field
+        - sqlCheck:
+            expectedResult: 1
+            sql: SELECT COUNT(*) FROM search_domain WHERE id = 10000 AND code = 'documents'
+        - sqlCheck:
+            expectedResult: 0
+            sql: >
+              SELECT COUNT(*)
+              FROM search_field
+              WHERE domain_id = 10000
+                 OR id BETWEEN 100000 AND 100050
+      changes:
+        - loadData:
+            encoding: UTF-8
+            file: liquibase/data/search_field_dms.csv
+            separator: ;
+            tableName: search_field
+        - sql:
+            comment: Move the sequence after the fixed metadata IDs.
+            sql: >
+              SELECT setval(
+                pg_get_serial_sequence('search_field', 'id'),
+                (SELECT MAX(id) FROM search_field),
+                true
+              );
+      rollback:
+        - delete:
+            tableName: search_field
+            where: domain_id = 10000
