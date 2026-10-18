@@ -229,11 +229,11 @@ Ensure you have [Docker](https://www.docker.com/) and Java 21 installed.
 
 **1. Start the infrastructure (PostgreSQL & ClickHouse)**
 ```bash
-docker-compose up -d
+docker compose -f infra/docker-compose.yml up -d
 ```
 2. Build the application
 ```bash
-./gradlew clean build -x test
+./gradlew clean build
 ```
 
 3. Run the application
@@ -243,3 +243,18 @@ docker-compose up -d
 ./gradlew bootRun --args='--spring.profiles.active=local'
 
 ```
+
+The local profile serves the API on port `8095`. Compose starts the database containers;
+it does not create the ClickHouse Silver tables or load search data. The registered domain
+and field metadata must match tables and columns prepared in ClickHouse before a search
+request can succeed.
+
+## Verification status
+
+The repository currently contains no automated test sources or CI workflow. A successful
+build does not verify query semantics, tenant isolation, or compatibility with a running
+ClickHouse database. Query-builder regression tests, PostgreSQL/ClickHouse integration
+tests, and a seeded local demonstration are the next verification priorities.
+
+Tenant filtering requires a trusted tenant identity from the surrounding authentication
+boundary. Parameterized query values alone do not establish authorization.
