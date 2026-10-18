@@ -89,7 +89,7 @@ source_column     = currency_name
 type              = TEXT
 filterable        = true
 sortable          = true
-allowed_operators = EQUALS,CONTAINS,STARTS_WITH
+allowed_operators = EQUALS,CONTAINS
 ```
 
 > The frontend sends `currencyName`. The backend resolves it to `currency_name` via metadata — frontend field names are **never** used directly in SQL.
@@ -121,7 +121,7 @@ POST /api/v1/search/contracts/query
   "filters": [
     {
       "field": "currencyName",
-      "operator": "STARTS_WITH",
+      "operator": "CONTAINS",
       "value": "AZ"
     }
   ],
@@ -149,7 +149,7 @@ SELECT
 FROM `silver_contract_360_flat`
 WHERE 1 = 1
   AND `organization_id` = :tenantValue
-  AND startsWith(lowerUTF8(toString(`currency_name`)), lowerUTF8(:p0))
+  AND positionCaseInsensitive(toString(`currency_name`), :p0) > 0
 ORDER BY `document_date` DESC
 LIMIT :limit OFFSET :offset
 ```
@@ -251,10 +251,11 @@ request can succeed.
 
 ## Verification status
 
-The repository currently contains no automated test sources or CI workflow. A successful
-build does not verify query semantics, tenant isolation, or compatibility with a running
-ClickHouse database. Query-builder regression tests, PostgreSQL/ClickHouse integration
-tests, and a seeded local demonstration are the next verification priorities.
+Run `./gradlew check` for query/validation regression tests and Checkstyle. CI runs the same
+command. The tests cover bound values, tenant parameters, rejected identifiers and fields,
+operator constraints, malformed requests, and pagination boundaries. They do not connect to
+PostgreSQL or ClickHouse, or establish the surrounding authentication boundary.
+Database integration tests and a seeded local demonstration remain verification priorities.
 
 Tenant filtering requires a trusted tenant identity from the surrounding authentication
 boundary. Parameterized query values alone do not establish authorization.
