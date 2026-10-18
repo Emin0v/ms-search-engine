@@ -1,5 +1,7 @@
 # ms-search-engine
 
+[![CI](https://github.com/Emin0v/ms-search-engine/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Emin0v/ms-search-engine/actions/workflows/ci.yml)
+
 A generic, metadata-driven search and filter microservice.
 
 ---
